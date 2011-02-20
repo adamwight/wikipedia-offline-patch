@@ -1,0 +1,154 @@
+<?php
+/**
+ * Special:Offline
+ *   Configuration and status reporting for standalone mode.
+ * Checks that dependencies are installed correctly and the database
+ * dumps have been prepared.
+ */
+
+$wgExtensionCredits['specialpage'][] = array(
+       'path' => __FILE__,
+       'name' => 'Wikipedia Offline Patch',
+       'author' => 'Adam Wight', 
+       'status' => 'beta',
+       'url' => 'http://code.google.com/p/wikipedia-offline-patch', 
+       'version' => '0.4',
+       'descriptionmsg' => 'special_offline_desc'
+       );
+
+$dir = dirname(__FILE__);
+$wgExtensionMessagesFiles['SpecialOffline'] = $dir.'/SpecialOffline.i18n.php';
+
+class SpecialOffline extends SpecialPage
+{
+    function SpecialOffline() {
+	parent::__construct('offline' /*, 'editinterface' */);
+    }
+
+    function execute($param) {
+	global $wgOut, $wgTitle;
+
+	require_once(dirname(__FILE__).'/DumpReader.php');
+
+	$this->setHeaders();
+	$this->outputHeader();
+
+	$this->runTests();
+
+	//TODO report and explain wgOfflineIgnoreLiveData
+    }
+
+    function runTests() {
+	global $wgOut, $wgTitle;
+
+	$wgOut->wrapWikiMsg('<h1>$1</h1>', 'heading_status');
+
+	// use an example to test that the index can be searched
+	list ($bz_file, $entry_title) =
+	    DumpReader::index_lookup(wfMsg('test_article'));
+
+	$wgOut->addHTML('<ul>');
+	$test_index = isset($bz_file);
+	$this->printTest($test_index, 'index_test');
+	if (!$test_index) {
+	    $this->diagnoseIndex();
+	    return;
+	}
+
+	// tests that bz2 dumpfiles can be opened and read
+	$xml = DumpReader::load_bz($bz_file, $entry_title);
+	$test_bz = isset($xml);
+	$this->printTest($test_bz, 'bzload_test');
+	if (!$test_bz) {
+	    $this->diagnoseBzload($bz_file);
+	    return;
+	}
+	    //report subdirectory setting
+//		if (substr($bz_file, 0, 1) == 'x') {
+//		    $subdir = dirname($bz_file); //TODO strip absolute components if needed
+//		    $wgOut->addWikiMsg('subdir-status', $subdir);
+//		    $wgOut->addHTML(
+//			'<label>' .  wfMsg('change-subdir') .
+//			'<input type=text size=20 name="subdir" value="'.$subdir.'">
+//			<input type=submit name="subdir" value="Change">
+//			</label/>'
+//		    );
+//		}
+
+	// TODO report language settings and availabilities
+
+	//test that a specific article can be loaded
+	$article_wml = DumpReader::load_article($entry_title);
+	$test_article = isset($article_wml);
+	$this->printTest($test_article, 'article_test');
+	if (!$test_article) {
+	    //TODO diagnose
+	    return;
+	}
+	//TODO test that the wml has not been padded or truncated
+
+	//test that our handler is still hooked in
+	$mw_api_article = new Article(Title::newFromText($entry_title));
+	$mw_api_article->loadContent();
+	$content = $mw_api_article->getContent();
+//wfDebug('got '.strlen($mw_api_article->mContent).' bytes of wml from cache');
+	$test_hooks = $mw_api_article->mContentLoaded;
+	// TODO false positive
+	$this->printTest($test_hooks, 'hooks_test');
+	if (!$test_hooks) {
+	    $this->diagnoseHooks();
+	    return;
+	}
+
+	//TODO test Templates
+
+	$wgOut->addHTML('</ul>');
+
+	$wgOut->wrapWikiMsg('<i>$1</i>', 'all_tests_pass');
+	//TODO div collapse or load on demand
+	//$wgOut->addWikiText($content);
+    }
+
+    function diagnoseIndex() {
+	global $wgOut, $wgOfflineWikiPath;
+
+	if (!isset($wgOfflineWikiPath)) {
+	    $this->printDiagnostic('offlinewikipath_not_configured');
+	}
+	elseif (!is_dir($wgOfflineWikiPath)) {
+	    $this->printDiagnostic(array('offlinewikipath_not_found', $wgOfflineWikiPath));
+	}
+	elseif (!is_dir("$wgOfflineWikiPath/db") || !file_exists("$wgOfflineWikiPath/db/termlist.DB")) {
+	    $this->printDiagnostic(array('dbdir_not_found', $wgOfflineWikiPath));
+	} else {
+	    $this->printDiagnostic('unknown_index_error');
+	}
+    }
+
+    function diagnoseBzload($bz_file) {
+	global $wgOut, $wgOfflineWikiPath;
+	
+	if (!file_exists($bz_file)) {
+	    $this->printDiagnostic(array('bz2_file_gone', $bz_file));
+	}
+	if (!extension_loaded('bzip2')) {
+	    $this->printDiagnostic(array('bz2_ext_needed', $bz_file));
+	}
+    }
+
+    function diagnoseHooks() {
+	// check that passing revisiontext through cache will work
+    }
+
+    function printTest($bool, $msg) {
+	global $wgOut;
+	if ($bool)
+	    $wgOut->wrapWikiMsg('<div class="result-pass"><li>$1</div>', $msg.'_pass');
+	else
+	    $wgOut->wrapWikiMsg('<div class="error"><li>$1</div>', $msg.'_fail');
+    }
+
+    function printDiagnostic($msg) {
+	$wgOut->wrapWikiMsg('<div class="errorbox">$1</div>', $msg);
+    }
+}
