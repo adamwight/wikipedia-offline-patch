@@ -5,7 +5,7 @@
 
 class CachedStorage
 {
-    function fetchIdByTitle($title) {
+    static function fetchIdByTitle($title) {
 	global $wgRevisionCacheExpiry, $wgMemc;
 	if ($wgRevisionCacheExpiry) { // TODO a better test for caching
 	    $titlekey = wfMemcKey( 'textid', 'titlehash', md5($title) );
@@ -16,13 +16,18 @@ class CachedStorage
 	return false;
     }
 
-    function set($title, $content) {
-	static $textid_seq = 1;
-	$textid = $textid_seq++;
-
+    static function set($title, $content) {
 	global $wgRevisionCacheExpiry, $wgMemc;
 	if (!$wgRevisionCacheExpiry) // caching is not possible
 	    return false;
+
+	// we need to assign a sequence to revision text, because
+	// Article::loadContent expects page.text_id to be an integer.
+	$seq_key = wfMemcKey('offline', 'textid_seq');
+	if (!$wgMemc->get($seq_key))
+	    $wgMemc->set($seq_key, 1); // and clear the cache??
+
+	$textid = $wgMemc->incr($seq_key);
 
 	// cache a lookup from title to fake textid
 	$titlekey = wfMemcKey( 'textid', 'titlehash', md5($title) );
