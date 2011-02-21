@@ -21,7 +21,8 @@ which include a webserver and supporting libraries.
    http://code.google.com/p/wikipedia-offline-patch
 
 There is an unusual dependency: the Xapian indexing library and its PHP
-bindings.
+bindings.  Also, you will have to configure some type of revision_text
+caching by setting $wgRevisionCacheExpiry and $wgCacheType.
 
 
 = Acknowledgements =
