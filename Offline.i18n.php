@@ -22,12 +22,14 @@ $messages['en'] = array(
     'offline_bzload_test_fail' => 'Compressed dump files were not loaded!',
     'offline_bz2_ext_needed' => 'Your PHP installation is missing the Bzip2 library.',
     'offline_bz2_file_gone' => 'The index pointed to a missing dump file: <em>$1</em>',
+    'offline_unknown_bz2_error' => 'There was an unknown problem reading dump file <em>$1</em>.',
 
     'offline_article_test_pass' => 'Article data was found where expected.',
     'offline_article_test_fail' => 'Indexed page has changed. Perhaps your index was made for another dump?',
 
     'offline_hooks_test_pass' => 'Mediawiki article loader will fetch from dump data.', //, from GRAMMAR(a) %1 encyclopedia called %2.
-    'offline_hooks_test_fail' => 'Offline hooks are not properly attaching. Maybe this is not MediaWiki 1.16?',
+    'offline_hooks_test_fail' => 'Mediawiki article loader is not fetching from dump data. ',
+    'offline_cache_needed' => 'You need to set up a cache, such as `php-pecl-apc`.',
 
     'offline_all_tests_pass' => 'You are good to go.',
 

@@ -66,9 +66,9 @@ class SpecialOffline extends SpecialPage
 	    //report subdirectory setting
 //		if (substr($bz_file, 0, 1) == 'x') {
 //		    $subdir = dirname($bz_file); //TODO strip absolute components if needed
-//		    $wgOut->addWikiMsg('subdir-status', $subdir);
+//		    $wgOut->addWikiMsg('offline_subdir-status', $subdir);
 //		    $wgOut->addHTML(
-//			'<label>' .  wfMsg('change-subdir') .
+//			'<label>' .  wfMsg('offline_change-subdir') .
 //			'<input type=text size=20 name="subdir" value="'.$subdir.'">
 //			<input type=submit name="subdir" value="Change">
 //			</label/>'
@@ -128,15 +128,25 @@ class SpecialOffline extends SpecialPage
     function diagnoseBzload($bz_file) {
 	global $wgOut, $wgOfflineWikiPath;
 	
-	if (!file_exists($bz_file)) {
-	    $this->printDiagnostic(array('offline_bz2_file_gone', $bz_file));
+	$full_path = $wgOfflineWikiPath.'/'.$bz_file;
+	if (!extension_loaded('bz2')) {
+	    $this->printDiagnostic('offline_bz2_ext_needed');
 	}
-	if (!extension_loaded('bzip2')) {
-	    $this->printDiagnostic(array('offline_bz2_ext_needed', $bz_file));
+	if (!file_exists($full_path)) {
+	    $this->printDiagnostic(array('offline_bz2_file_gone', $full_path));
+	}
+	else {
+	    $this->printDiagnostic(array('offline_unknown_bz2_error', $full_path));
 	}
     }
 
     function diagnoseHooks() {
+	global $wgOut, $wgMemc;
+	$key = wfMemcKey('offline','trial');
+	$wgMemc->set($key, true);
+	if (!$wgMemc->get($key)) {
+	    $this->printDiagnostic('offline_cache_needed');
+	}
 	// check that passing revisiontext through cache will work
     }
 
@@ -149,6 +159,7 @@ class SpecialOffline extends SpecialPage
     }
 
     function printDiagnostic($msg) {
+	global $wgOut;
 	$wgOut->wrapWikiMsg('<div class="errorbox">$1</div>', $msg);
     }
 }
