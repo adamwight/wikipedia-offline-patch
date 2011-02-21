@@ -5,7 +5,7 @@ $wgExtensionCredits['other'][] = array(
        'author' => 'Adam Wight', 
        'status' => 'beta',
        'url' => 'http://code.google.com/p/wikipedia-offline-patch', 
-       'version' => '0.4',
+       'version' => '0.6',
        'descriptionmsg' => 'offline_desc'
        );
 
@@ -16,19 +16,20 @@ $wgExtensionAliasesFiles['Offline'] = $dir.'/Offline.aliases.php';
 $wgExtensionFunctions[] = 'wfOfflineInit';
 
 $wgSpecialPages['Offline'] = 'SpecialOffline';
-$wgSpecialPageGroups['Offline'] = 'wiki'; // XXX something broke
+$wgSpecialPageGroups['Offline'] = 'wiki'; // XXX is not the key?
 
-/**
- * It's sad but there are no hooks which allow us to set the
- * db to null and provide our own article storage.  So we hijack the
- * whole thing with a faux sql layer which intercepts page and
- * revision fetching.  We depend on the php accel cache to store wml.
- */
-$wgLBFactoryConf = array( 'class' => 'LBFactory_No' );
 
-$wgAutoloadClasses['LBFactory_No'] = $dir.'/nulldb/LBFactory_No.php';
+$wgAutoloadClasses['DatabaseBz2'] = $dir.'/DatabaseBz2.php';
 $wgAutoloadClasses['SpecialOffline'] = $dir.'/SpecialOffline.php';
 
+
 function wfOfflineInit() {
-    // if (textid_seq == 0) clearOfflineCache();
+    // Our dump fetch is installed as the fallback to existing dbs.
+    // Dump reader will be called through a very single-minded sql api.
+    $wgDBservers[] = array(
+	'dbname' => $wgOfflineWikiPath,
+	'type' => 'bz2',
+	'load' => 1,
+    );
+wfDebug('XXX '.count($wgDBservers));
 }
