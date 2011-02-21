@@ -1,31 +1,41 @@
-This extension provides an offline viewing mode for Wikipedia dumps (for
-example, a recent English, compressed backup of all article text (6.3Gb),
-    http://download.wikimedia.org/enwiki/20101011/enwiki-20101011-pages-articles.xml.bz2
+This extension provides an offline viewing mode for Wikipedia dumps, or
+any other wiki.
 
-or any other language or collection.
-    http://dumps.wikimedia.org/backup-index.html
+Be aware that you will need a Wikipedia dump and the corresponding index,
+see the project page if you need help:
+
+    For a recent English, compressed backup of all article text (6.3Gb
+    once you build an index):
+http://download.wikimedia.org/enwiki/20101011/enwiki-20101011-pages-articles.xml.bz2
+
+    For a small testing database (or if you speak Tagalog), try this
+http://wikipedia-offline-patch.googlecode.com/files/wiki-splits-tl.zip
+
+    or browse many other languages and wiki projects:
+http://dumps.wikimedia.org/backup-index.html
 
 
-Be aware that an indexed Wikipedia dump must be obtained independently in order
-to install this software.  See the project page below to build an indexer (to build
-an index for your wiki...), and for binary distributions.
+
+The project page has binary distributions for macos, windows, and linux,
+which include a webserver and supporting libraries.
    http://code.google.com/p/wikipedia-offline-patch
 
-There an unusual dependency, the Xapian indexing library and its PHP bindings.
+There is an unusual dependency: the Xapian indexing library and its PHP
+bindings.
 
 
 = Acknowledgements =
 The current author is Adam Wight, who can be reached through the
 wikipedia-offline-patch project page or at adamw on ludd.net.
 
-Thanassis Tsiodras has a great page explaining how to build a working offline
-wikipedia:
+Thanassis Tsiodras has a great page explaining how to build a working
+offline wikipedia:
     http://users.softlab.ece.ntua.gr/~ttsiod/buildWikipediaOffline.html
 
 Wikipedia Offline Client was the starting point for this project.
     https://projects.fslab.de/projects/wpofflineclient/
 
-MediaWiki developers sent a few great ideas.
+MediaWiki developers contributed valuable insight.
 
 
 This software and its source code are licensed as GPL.

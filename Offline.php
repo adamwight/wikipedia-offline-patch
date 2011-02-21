@@ -24,13 +24,33 @@ $wgAutoloadClasses['SpecialOffline'] = $dir.'/SpecialOffline.php';
 
 
 function wfOfflineInit() {
-    global $wgOfflineWikiPath;
+    global $wgDBservers, $wgOfflineWikiPath;
+
+// XXX you wish it were that easy.
+    if ( !$wgDBservers ) {
+	global $wgDBserver, $wgDBuser, $wgDBpassword, $wgDBname, $wgDBtype, $wgDebugDumpSql;
+	$wgDBservers = array(array(
+		'host' => $wgDBserver,
+		'user' => $wgDBuser,
+		'password' => $wgDBpassword,
+		'dbname' => $wgDBname,
+		'type' => $wgDBtype,
+		'load' => 1,
+		'flags' => ($wgDebugDumpSql ? DBO_DEBUG : 0) | DBO_DEFAULT
+	));
+    }
+
+
     // Our dump fetch is installed as the fallback to existing dbs.
     // Dump reader will be called through a very single-minded sql api.
-    $wgDBservers[] = array(
+    //$wgDBservers[] = array( // fixme: you can only do this if your primary db will successfully connect().
+    $wgDBservers[0] = array(
 	'dbname' => $wgOfflineWikiPath,
 	'type' => 'bz2',
 	'load' => 1,
+	'host' => false,
+	'user' => false,
+	'flags' => false,
+	'password' => false,
     );
-wfDebug('XXX '.count($wgDBservers));
 }

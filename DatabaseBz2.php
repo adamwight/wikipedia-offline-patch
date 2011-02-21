@@ -27,8 +27,8 @@
 class DatabaseBz2 extends Database
 {
     function select( $table, $fields, $conds='', $fname = 'Database::select', $options = array() ) {
-	require_once(dirname(__FILE__).'/../DumpReader.php');
-	require_once(dirname(__FILE__).'/../CachedStorage.php');
+	require_once(dirname(__FILE__).'/DumpReader.php');
+	require_once(dirname(__FILE__).'/CachedStorage.php');
 	$row = null;
 	$title = false;
 	if (isset($conds['page_title'])) {
@@ -195,6 +195,7 @@ class DatabaseBz2 extends Database
 	}
 
 	function open( $server, $user, $password, $dbName ) {
+//TODO test article load using TestDumpReader
 		return true;
 	}
 

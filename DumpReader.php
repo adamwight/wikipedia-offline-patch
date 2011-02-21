@@ -14,7 +14,7 @@ class DumpReader
 
 	  $article_wml = self::load_all_data($title, $archive_file);
       } else {
-	  $article_wml = ""; //XXX wfMsg('nopagefoundXXX');
+	  $article_wml = ""; //TODO or null?
       }
       $article_wml = htmlspecialchars_decode($article_wml);
       return $article_wml;
