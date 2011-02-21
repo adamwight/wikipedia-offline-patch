@@ -3,6 +3,8 @@ $messages = array();
 $messages['en'] = array(
     'offline_desc' => 'Read articles offline, from *pedia dump files.  See page [[Special:Offline]] for status.',
     'offline' => 'Offline configuration helper', // special page title
+    //'special_page_title' => 'Offline configuration',
+    'special_offline_desc' => 'Status and diagnostics for the Offline extension.',
 
     'heading_status' => 'Current Status',
 
@@ -17,20 +19,22 @@ $messages['en'] = array(
     'unknown_index_error' => 'The index to your dump could not be read for an unknown reason. Perhaps the database files are damaged.',
 
     'bzload_test_pass' => 'Compressed dump files can be opened.',
-    'bzload_test_fail' => 'Compressed dump files cannot be opened!',
+    'bzload_test_fail' => 'Compressed dump files were not loaded!',
     'bz2_ext_needed' => 'Your PHP installation is missing the Bzip2 library.',
     'bz2_file_gone' => 'The index pointed to a missing dump file: <em>$1</em>',
 
-    'article_test_pass' => 'Article data can be read.',
-    'article_test_fail' => 'Article data could not be read.',
+    'article_test_pass' => 'Article data was found where expected.',
+    'article_test_fail' => 'Indexed page has changed. Perhaps your index was made for another dump?',
 
-    'hooks_test_pass' => 'Mediawiki article load is running offline.',
+    'hooks_test_pass' => 'Mediawiki article loader will fetch from dump data.', //, from GRAMMAR(a) %1 encyclopedia called %2.
     'hooks_test_fail' => 'Offline hooks are not properly attaching. Maybe this is not MediaWiki 1.16?',
 
     'all_tests_pass' => 'You are good to go.',
 
+    // user preferences
     'subdir_status' => 'Index files were found in subdirectory named $1',
     'change_subdir' => 'Use the following directory prefix instead:',
 
     'change_language' => 'Dumps of the following languages have been detected. Check all dumps you want to make available.',
+    'live_data_preferred' => 'Matches from the so-called live database will be preferred over dump text.',
 );

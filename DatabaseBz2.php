@@ -1,6 +1,10 @@
 <?php
-
 /**
+ * A rudimentary database impl which can retrieve page revision text
+ * from backup dumps.  This can be perfectly responsive if you have
+ * broken the .bz2 (careful now) into chunks for indexing.
+ * 
+ **
  * Copyright (C) 2008, 2009 Michael Nowak
  * contributions by Adam Wight, 2011
  *
@@ -22,7 +26,62 @@
 
 class DatabaseBz2 extends Database
 {
-	static $instance;
+    function select( $table, $fields, $conds='', $fname = 'Database::select', $options = array() ) {
+	require_once(dirname(__FILE__).'/../DumpReader.php');
+	require_once(dirname(__FILE__).'/../CachedStorage.php');
+	$row = null;
+	$title = false;
+	if (isset($conds['page_title'])) {
+	    $title = $conds['page_title'];
+	    if ($conds['page_namespace'])
+		$title = MWNamespace::getCanonicalName($conds['page_namespace']).':'.$title;
+	}
+
+	if ($title && ($table == 'page' || in_array('page', $table))) {
+	    if (preg_match('/Template:Pp-/i', $title))
+		return false;
+
+	    $textid = CachedStorage::fetchIdByTitle($title);
+	    if (!$textid) {
+		$content = DumpReader::load_article($title);
+		if (!$content)
+		    return false;
+		$textid = CachedStorage::set($title, $content);
+	    }
+	} elseif (isset($conds['rev_id'])) {
+	    $textid = $conds['rev_id'];
+	}
+
+	if (!isset($textid))
+	    return false;
+
+	if ($table == 'page') {
+	    // Given a page_title, get the id of text content.  For efficiency,
+	    //    we fetch the text and store it by ID to access in case 2.
+	    $row = array_fill_keys($fields, '');
+	    $row['page_id'] = $textid;
+	    $row['page_title'] = $title;
+	    $row['page_latest'] = $textid;
+	}
+	elseif ($table == array('page', 'revision')) { 
+	    // Redundantly return textid which is cache key to article wml.
+	    $fields[] = 'rev_user';
+	    $fields[] = 'rev_user_text';
+	    $row = array_fill_keys($fields, '');
+	    $row['rev_id'] = $textid;
+	    $row['rev_text_id'] = $textid;
+	}
+	else { print_r($table); print_r($conds); }
+
+	if (!$row)
+	    return false;
+	return $this->resultObject($row);
+    }
+
+
+////////////////////////////////////////////////BOILERPLATE FOLLOWS
+
+    static $instance;
 
 	static function getInstance() {
 		if ( !isset( self::$instance ) ) {
@@ -258,63 +317,6 @@ class DatabaseBz2 extends Database
 
 	function makeSelectOptions( $options ) {
 		return null;
-	}
-
-	function select( $table, $fields, $conds='', $fname = 'Database::select', $options = array() ) {
-		require_once(dirname(__FILE__).'/../DumpReader.php');
-		require_once(dirname(__FILE__).'/../CachedStorage.php');
-		$row = null;
-		$title = false;
-		if (isset($conds['page_title'])) {
-		    $title = $conds['page_title'];
-		    if ($conds['page_namespace'])
-			$title = MWNamespace::getCanonicalName($conds['page_namespace']).':'.$title;
-		}
-
-// TODO hard to do when we have to take over the db driver... We would have to be hooked in front
-//		    global $wgOfflineIgnoreLiveData;
-//		    if ($live_db_row && !$wgOfflineIgnoreLiveData)
-//			return true; // use page content as loaded from the database
-
-		if ($title && ($table == 'page' || in_array('page', $table))) {
-		    if (preg_match('/Template:Pp-/i', $title))
-			return false;
-
-		    $textid = CachedStorage::fetchIdByTitle($title);
-		    if (!$textid) {
-			$content = DumpReader::load_article($title);
-			if (!$content)
-			    return false;
-			$textid = CachedStorage::set($title, $content);
-		    }
-		} elseif (isset($conds['rev_id'])) {
-		    $textid = $conds['rev_id'];
-		}
-
-		if (!isset($textid))
-		    return false;
-
-		if ($table == 'page') {
-		    // Given a page_title, get the id of text content.  For efficiency,
-		    //    we fetch the text and store it by ID to access in case 2.
-		    $row = array_fill_keys($fields, '');
-		    $row['page_id'] = $textid;
-		    $row['page_title'] = $title;
-		    $row['page_latest'] = $textid;
-		}
-		elseif ($table == array('page', 'revision')) { 
-		    // Redundantly return textid which is cache key to article wml.
-		    $fields[] = 'rev_user';
-		    $fields[] = 'rev_user_text';
-		    $row = array_fill_keys($fields, '');
-		    $row['rev_id'] = $textid;
-		    $row['rev_text_id'] = $textid;
-		}
-		else { print_r($table); print_r($conds); }
-
-		if (!$row)
-		    return false;
-		return $this->resultObject($row);
 	}
 
 	function selectRow( $table, $vars, $conds, $fname = 'Database::selectRow', $options = array() ) {
@@ -557,22 +559,3 @@ class DatabaseBz2 extends Database
 		return true;
 	}
 }
-
-/**
- * Disable all types of databases (excluding Mysql) by replacing they classes with this one
-**/
-
-class DatabaseIbm_db2 extends DatabaseNo
-{}
-
-class DatabaseOracle extends DatabaseNo
-{}
-
-class DatabasePostgres extends DatabaseNo
-{}
-
-class DatabaseMssql extends DatabaseNo
-{}
-
-class DatabaseSqlite extends DatabaseNo
-{}
