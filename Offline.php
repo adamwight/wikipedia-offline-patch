@@ -24,6 +24,7 @@ $wgAutoloadClasses['SpecialOffline'] = $dir.'/SpecialOffline.php';
 
 
 function wfOfflineInit() {
+    global $wgOfflineWikiPath;
     // Our dump fetch is installed as the fallback to existing dbs.
     // Dump reader will be called through a very single-minded sql api.
     $wgDBservers[] = array(

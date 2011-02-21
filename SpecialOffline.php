@@ -12,8 +12,8 @@ $wgExtensionCredits['specialpage'][] = array(
        'author' => 'Adam Wight', 
        'status' => 'beta',
        'url' => 'http://code.google.com/p/wikipedia-offline-patch', 
-       'version' => '0.4',
-       'descriptionmsg' => 'special_offline_desc'
+       'version' => '0.6',
+       'descriptionmsg' => 'offline_special_desc'
        );
 
 $dir = dirname(__FILE__);
@@ -41,15 +41,15 @@ class SpecialOffline extends SpecialPage
     function runTests() {
 	global $wgOut, $wgTitle;
 
-	$wgOut->wrapWikiMsg('<h1>$1</h1>', 'heading_status');
+	$wgOut->wrapWikiMsg('<h1>$1</h1>', 'offline_heading_status');
 
 	// use an example to test that the index can be searched
 	list ($bz_file, $entry_title) =
-	    DumpReader::index_lookup(wfMsg('test_article'));
+	    DumpReader::index_lookup(wfMsg('offline_test_article'));
 
 	$wgOut->addHTML('<ul>');
 	$test_index = isset($bz_file);
-	$this->printTest($test_index, 'index_test');
+	$this->printTest($test_index, 'offline_index_test');
 	if (!$test_index) {
 	    $this->diagnoseIndex();
 	    return;
@@ -58,7 +58,7 @@ class SpecialOffline extends SpecialPage
 	// tests that bz2 dumpfiles can be opened and read
 	$xml = DumpReader::load_bz($bz_file, $entry_title);
 	$test_bz = isset($xml);
-	$this->printTest($test_bz, 'bzload_test');
+	$this->printTest($test_bz, 'offline_bzload_test');
 	if (!$test_bz) {
 	    $this->diagnoseBzload($bz_file);
 	    return;
@@ -80,7 +80,7 @@ class SpecialOffline extends SpecialPage
 	//test that a specific article can be loaded
 	$article_wml = DumpReader::load_article($entry_title);
 	$test_article = isset($article_wml);
-	$this->printTest($test_article, 'article_test');
+	$this->printTest($test_article, 'offline_article_test');
 	if (!$test_article) {
 	    //TODO diagnose
 	    return;
@@ -94,7 +94,7 @@ class SpecialOffline extends SpecialPage
 //wfDebug('got '.strlen($mw_api_article->mContent).' bytes of wml from cache');
 	$test_hooks = $mw_api_article->mContentLoaded;
 	// TODO false positive
-	$this->printTest($test_hooks, 'hooks_test');
+	$this->printTest($test_hooks, 'offline_hooks_test');
 	if (!$test_hooks) {
 	    $this->diagnoseHooks();
 	    return;
@@ -104,7 +104,7 @@ class SpecialOffline extends SpecialPage
 
 	$wgOut->addHTML('</ul>');
 
-	$wgOut->wrapWikiMsg('<i>$1</i>', 'all_tests_pass');
+	$wgOut->wrapWikiMsg('<i>$1</i>', 'offline_all_tests_pass');
 	//TODO div collapse or load on demand
 	//$wgOut->addWikiText($content);
     }
@@ -119,9 +119,9 @@ class SpecialOffline extends SpecialPage
 	    $this->printDiagnostic(array('offlinewikipath_not_found', $wgOfflineWikiPath));
 	}
 	elseif (!is_dir("$wgOfflineWikiPath/db") || !file_exists("$wgOfflineWikiPath/db/termlist.DB")) {
-	    $this->printDiagnostic(array('dbdir_not_found', $wgOfflineWikiPath));
+	    $this->printDiagnostic(array('offline_dbdir_not_found', $wgOfflineWikiPath));
 	} else {
-	    $this->printDiagnostic('unknown_index_error');
+	    $this->printDiagnostic('offline_unknown_index_error');
 	}
     }
 
@@ -129,10 +129,10 @@ class SpecialOffline extends SpecialPage
 	global $wgOut, $wgOfflineWikiPath;
 	
 	if (!file_exists($bz_file)) {
-	    $this->printDiagnostic(array('bz2_file_gone', $bz_file));
+	    $this->printDiagnostic(array('offline_bz2_file_gone', $bz_file));
 	}
 	if (!extension_loaded('bzip2')) {
-	    $this->printDiagnostic(array('bz2_ext_needed', $bz_file));
+	    $this->printDiagnostic(array('offline_bz2_ext_needed', $bz_file));
 	}
     }
 
