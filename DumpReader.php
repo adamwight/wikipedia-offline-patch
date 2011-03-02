@@ -7,10 +7,10 @@ class DumpReader
   static function load_article($title)
   {
       $article_wml = null;
-      $results = self::index_lookup($title);
-      if ($results) {
-	  $archive_file = $results[0];
-	  $title = $results[1];
+      $results = self::index_search($title);
+      if (count($results) > 0) {
+	  $archive_file = $results[0][0];
+	  $title = $results[0][1];
 
 	  $article_wml = self::load_all_data($title, $archive_file);
       } else {
@@ -22,7 +22,7 @@ class DumpReader
 
   static function load_all_data($title, $file_name)
   {
-  #error_log("loading chunk [$file_name] to find article [$title]");
+  error_log("loading chunk [$file_name] to find article [$title]");
       $article_wml = "";
       $matches = array();
       $all_chunk_data = self::load_bz($file_name);
@@ -30,7 +30,7 @@ class DumpReader
 	      $all_chunk_data, $matches))
       {
 	  $all_chunk_data = $matches[1];
-	  for (;;) {
+	  while (isset($all_chunk_data)) {
 	      $end_pos = strpos($all_chunk_data, '</text>');
 	      if ($end_pos !== FALSE) {
 		  $article_wml .= substr($all_chunk_data, 0, $end_pos);
@@ -69,7 +69,7 @@ class DumpReader
   #
   # use the index files 
   #
-  static function index_lookup($title)
+  static function index_search($title)
   {
     $title = strtr($title, '_', ' ');
     $title = strtolower(trim($title));
@@ -100,12 +100,13 @@ class DumpReader
 	  }
       }
 
-      # TODO...
-      $result = null;
-      if ($matches->size() > 0) {
-	  $entry = $matches->begin()->get_document()->get_data();
-	  $fsep = strpos($entry, ':');
-	  $result = array(substr($entry, 0, $fsep), substr($entry, $fsep + 1));
+      $result = array();
+      for ($i = $matches->begin(); !$i->equals($matches->end()); $i->next())
+	  {
+		  $entry = $i->get_document()->get_data();
+		  $fsep = strpos($entry, ':');
+		  $row = array(substr($entry, 0, $fsep), substr($entry, $fsep + 1));
+		  $result[] = $row;
       }
       # not in Xapian 1.0.X
       #$db->close();
@@ -113,19 +114,22 @@ class DumpReader
       return $result;
 
     } catch (Exception $e) {
-	error_log($e->getMessage());
+	wfDebug(__METHOD__.':'.$e->getMessage());
 	return null;
     }
   }
 
   static function increment_file($fname)
   {
-      // XXX assuming .bz2
+      // XXX assuming a lot
       $matches = array();
-      if (preg_match('/(.*?)(\d+)(.*?)$/', $fname, $matches)) {
+// TODO fails on 99 ...
+      if (preg_match('/(.*?)([1-9][0-9]*)(.*?)$/', $fname, $matches)) {
 	  $i = $matches[2];
-	  preg_replace("/$i/", $i + 1, $fname);
+	  return preg_replace("/$i/", $i + 1, $fname);
+      } else {
+	  wfDebug('Failed to grok your wiki-splits filename pattern');
+	  return false;
       }
-      return $fname;
   }
 }
