@@ -315,7 +315,7 @@ class DatabaseBz2 extends Database
 	}
 
 	function selectField( $table, $var, $cond='', $fname = 'Database::selectField', $options = array() ) {
-		return null;
+		return $this->fetchObject($this->select($table, array($var), $cond));
 	}
 
 	function makeSelectOptions( $options ) {
