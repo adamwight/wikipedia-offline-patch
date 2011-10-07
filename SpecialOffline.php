@@ -43,11 +43,12 @@ class SpecialOffline extends SpecialPage
 
 	$wgOut->wrapWikiMsg('<h1>$1</h1>', 'offline_heading_status');
 
-	// use an example to test that the index can be searched
-	list ($bz_file, $entry_title) =
-	    DumpReader::index_lookup(wfMsg('offline_test_article'));
-
 	$wgOut->addHTML('<ul>');
+	// lookup a real article in the index can be searched
+	$results = DumpReader::index_search(wfMsg('offline_test_article'));
+	if (count($results) > 0)
+		list ($bz_file, $entry_title) = $results[0];
+
 	$test_index = isset($bz_file);
 	$this->printTest($test_index, 'offline_index_test');
 	if (!$test_index) {

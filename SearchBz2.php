@@ -100,7 +100,7 @@ class Bz2SearchResultSet extends SearchResultSet {
 			$row->page_title = $title;
 		}
 
-//error_log('GOT'.$row->page_namespace .' : '. $row->page_title .'('.$bzfile.')');
+//wfDebug('GOT'.$row->page_namespace .' : '. $row->page_title .'('.$bzfile.')');
 		return new SearchResult($row);
 	}
 }

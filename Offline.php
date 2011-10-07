@@ -5,7 +5,7 @@ $wgExtensionCredits['other'][] = array(
        'author' => 'Adam Wight', 
        'status' => 'beta',
        'url' => 'http://code.google.com/p/wikipedia-offline-patch', 
-       'version' => '0.6',
+       'version' => '0.6.1',
        'descriptionmsg' => 'offline_desc'
        );
 

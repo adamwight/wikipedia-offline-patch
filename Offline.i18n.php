@@ -40,3 +40,7 @@ $messages['en'] = array(
     'offline_change_language' => 'Dumps of the following languages have been detected. Check all dumps you want to make available.',
     'offline_live_data_preferred' => 'Matches from the so-called live database will be preferred over dump text.',
 );
+
+$messages['tl'] = array(
+    'offline_test_article' => 'Myanmar', // a word likely to be found
+);

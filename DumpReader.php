@@ -22,7 +22,7 @@ class DumpReader
 
   static function load_all_data($title, $file_name)
   {
-  error_log("loading chunk [$file_name] to find article [$title]");
+      wfDebug("loading chunk [$file_name] to find article [$title]");
       $article_wml = "";
       $matches = array();
       $all_chunk_data = self::load_bz($file_name);
@@ -38,7 +38,7 @@ class DumpReader
 	      }
 	      $article_wml .= $all_chunk_data;
 
-  error_log('continuing into next bz2 chunk');
+	      wfDebug('continuing into next bz2 chunk');
 	      $file_name = self::increment_file($file_name);
 	      $all_chunk_data = self::load_bz($file_name);
 	  }
@@ -73,7 +73,7 @@ class DumpReader
   {
     $title = strtr($title, '_', ' ');
     $title = strtolower(trim($title));
-  #error_log("looking up word [$title]");
+    #wfDebug("looking up word [$title]");
 
     try {
       require_once("xapian.php");
@@ -96,7 +96,7 @@ class DumpReader
 	      $row = $i->get_document();
 	      $str = $i->get_percent()."% [".$row->get_data()."]";
 	      $scores[] = $str;
-	      if (1/*DEBUG*/) error_log("$str\n");
+	      if (1/*DEBUG*/) wfDebug("$str\n");
 	  }
       }
 

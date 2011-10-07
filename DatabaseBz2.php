@@ -33,19 +33,21 @@ class DatabaseBz2 extends Database
 	$title = false;
 	if (isset($conds['page_title'])) {
 	    $title = $conds['page_title'];
-	    if ($conds['page_namespace'])
-		$title = MWNamespace::getCanonicalName($conds['page_namespace']).':'.$title;
+	    if ($conds['page_namespace'] && MWNamespace::getCanonicalName($conds['page_namespace']))
+		  $title = MWNamespace::getCanonicalName($conds['page_namespace']).':'.$title;
 	}
 
-	if ($title && ($table == 'page' || in_array('page', $table))) {
+	if ($title && ($table == 'page' || (is_array($table) && in_array('page', $table)))) {
 	    if (preg_match('/Template:Pp-/i', $title))
 		return false;
 
 	    $textid = CachedStorage::fetchIdByTitle($title);
 	    if (!$textid) {
 		$content = DumpReader::load_article($title);
-		if (!$content)
+		if (!$content) {
+                    wfDebug('no content for '.$title);
 		    return false;
+		}
 		$textid = CachedStorage::set($title, $content);
 	    }
 	} elseif (isset($conds['rev_id'])) {
