@@ -503,7 +503,7 @@ class DatabaseBz2 extends Database
 	function aggregateValue ($valuedata,$valuename='value') {
 	}
 
-	function getSoftwareLink() {
+	static function getSoftwareLink() {
 		return "[http://www.mysql.com/ MySQL]";
 	}
 

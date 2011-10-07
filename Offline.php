@@ -20,13 +20,14 @@ $wgSpecialPageGroups['Offline'] = 'wiki'; // XXX is not the key?
 
 
 $wgAutoloadClasses['DatabaseBz2'] = $dir.'/DatabaseBz2.php';
+$wgAutoloadClasses['SearchBz2'] = $dir.'/SearchBz2.php';
 $wgAutoloadClasses['SpecialOffline'] = $dir.'/SpecialOffline.php';
 
 
 function wfOfflineInit() {
     global $wgDBservers, $wgOfflineWikiPath;
 
-// XXX you wish it were that easy.
+// TODO -> mediawiki:
     if ( !$wgDBservers ) {
 	global $wgDBserver, $wgDBuser, $wgDBpassword, $wgDBname, $wgDBtype, $wgDebugDumpSql;
 	$wgDBservers = array(array(
@@ -44,7 +45,7 @@ function wfOfflineInit() {
     // Our dump fetch is installed as the fallback to existing dbs.
     // Dump reader will be called through a very single-minded sql api.
     //$wgDBservers[] = array( // fixme: you can only do this if your primary db will successfully connect().
-    $wgDBservers[0] = array(
+    $wgDBservers[] = array(
 	'dbname' => $wgOfflineWikiPath,
 	'type' => 'bz2',
 	'load' => 1,
