@@ -33,17 +33,57 @@ class SpecialOffline extends SpecialPage
 	$this->setHeaders();
 	$this->outputHeader();
 
-	$this->runTests();
+        if (isset($GLOBALS['_GET']['reindex']))
+        {
+          $wgOut->wrapWikiMsg('$1', 'offline_reindex_begin');
+          $wgOut->addHTML('XXX web ui unimplemented');
+        }
+        else if ($this->runTests())
+        {
+          $this->show_config();
+        }
 
 	//TODO report and explain wgOfflineIgnoreLiveData
+    }
+
+    function show_config()
+    {
+      global $wgOut, $wgTitle;
+
+      $wgOut->wrapWikiMsg('<h1>$1</h1>', 'offline_heading_configuration');
+        
+      global $wgOfflineWikiPath;
+      $wgOut->wrapWikiMsg('$1', array('offline_db_path', htmlentities($wgOfflineWikiPath)));
+
+      $wgOut->addHTML( '<a href="'.$wgTitle->getLocalURL('reindex').'">'.
+        wfMsg('offline_reindex_button').'</a>');
     }
 
     function runTests() {
 	global $wgOut, $wgTitle;
 
+        $html = <<<EOS
+<style type='text/css'>
+.status.good {
+  background-color: rgb(100, 200, 100);
+}
+
+.status.collapsed {
+  display: none;
+}
+
+.status {
+  display: block;
+  border-style: solid;
+  padding: 5px;
+}
+</style>
+EOS;
+        $wgOut->addHTML($html); 
+
 	$wgOut->wrapWikiMsg('<h1>$1</h1>', 'offline_heading_status');
 
-	$wgOut->addHTML('<ul>');
+	$wgOut->addHTML('<div class="status"><ul>');
 	// lookup a real article in the index can be searched
 	$results = DumpReader::index_search(wfMsg('offline_test_article'));
 	if (count($results) > 0)
@@ -53,7 +93,7 @@ class SpecialOffline extends SpecialPage
 	$this->printTest($test_index, 'offline_index_test');
 	if (!$test_index) {
 	    $this->diagnoseIndex();
-	    return;
+	    return false;
 	}
 
 	// tests that bz2 dumpfiles can be opened and read
@@ -62,7 +102,7 @@ class SpecialOffline extends SpecialPage
 	$this->printTest($test_bz, 'offline_bzload_test');
 	if (!$test_bz) {
 	    $this->diagnoseBzload($bz_file);
-	    return;
+	    return false;
 	}
 	    //report subdirectory setting
 //		if (substr($bz_file, 0, 1) == 'x') {
@@ -84,7 +124,7 @@ class SpecialOffline extends SpecialPage
 	$this->printTest($test_article, 'offline_article_test');
 	if (!$test_article) {
 	    //TODO diagnose
-	    return;
+	    return false;
 	}
 	//TODO test that the wml has not been padded or truncated
 
@@ -98,16 +138,18 @@ class SpecialOffline extends SpecialPage
 	$this->printTest($test_hooks, 'offline_hooks_test');
 	if (!$test_hooks) {
 	    $this->diagnoseHooks();
-	    return;
+	    return false;
 	}
 
 	//TODO test Templates
 
-	$wgOut->addHTML('</ul>');
+	$wgOut->addHTML('</ul></div>');
 
-	$wgOut->wrapWikiMsg('<i>$1</i>', 'offline_all_tests_pass');
+        $wgOut->wrapWikiMsg('<div class="status good">$1</div>', 'offline_all_tests_pass');
 	//TODO div collapse or load on demand
 	//$wgOut->addWikiText($content);
+
+        return true;
     }
 
     function diagnoseIndex() {

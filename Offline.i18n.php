@@ -7,6 +7,12 @@ $messages['en'] = array(
     'offline_special_desc' => 'Status and diagnostics for the Offline extension.',
 
     'offline_heading_status' => 'Current Status',
+    'offline_heading_configuration' => 'Configuration',
+
+    'offline_reindex_button' => 'Rebuild index now',
+    'offline_reindex_begin' => 'Beginning offline index rebuild, this could take days...',
+
+    'offline_db_path' => 'Dump database found in: <b>$1</b>',
 
     'offline_test_article' => 'Andalusia', // a word likely to be found
     'offline_bad_test_article' => 'Internal error: the test_article "$1" was not found, but the index database seems to be good.',
