@@ -29,7 +29,7 @@ class DatabaseBz2 extends Database
     function select( $table, $fields, $conds='', $fname = 'Database::select', $options = array() ) {
 	require_once(dirname(__FILE__).'/DumpReader.php');
 	require_once(dirname(__FILE__).'/CachedStorage.php');
-	$row = null;
+	$row = array();
 	$title = false;
 	if (isset($conds['page_title'])) {
 	    $title = $conds['page_title'];
@@ -55,7 +55,7 @@ class DatabaseBz2 extends Database
 	}
 
 	if (!isset($textid))
-	    return false;
+	    return $this->resultObject(array());
 
 	if ($table == 'page') {
 	    // Given a page_title, get the id of text content.  For efficiency,
@@ -75,8 +75,6 @@ class DatabaseBz2 extends Database
 	}
 	else { print_r($table); print_r($conds); }
 
-	if (!$row)
-	    return false;
 	return $this->resultObject($row);
     }
 
